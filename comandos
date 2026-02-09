@@ -1,0 +1,16 @@
+## build imagem Docker local
+docker build -t ecs-rds-demo:1 .
+
+## Executa container baseado na imagem
+docker run --rm -p 8080:80 ecs-rds-demo:1
+
+## json dos dados de conexão para secret manager
+
+
+{
+  "host": "endpoint rds",
+  "username": "usuario",
+  "password": "senha",
+  "port": porta,
+  "dbname": "demo"
+}

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card">
+      <div class="title">
+        <h2>RDS • Conexão Manual</h2>
+        <small>Digite host/usuário/senha</small>
+      </div>
+
+      {% if error %}
+        <div class="alert err">{{ error }}</div>
+      {% endif %}
+      {% if result is not none and error is none %}
+        <div class="alert ok">Conectou com sucesso! Linhas: <b>{{ result|length }}</b></div>
+      {% endif %}
+
+      <form method="post" action="/manual/connect" autocomplete="off">
+        <div class="form">
+          <div>
+            <label>Host (endpoint do RDS)</label>
+            <input name="host" placeholder="mydb.xxxxx.sa-east-1.rds.amazonaws.com" value="{{ form.get('host','') }}" />
+          </div>
+          <div>
+            <label>Porta</label>
+            <input name="port" value="{{ form.get('port','3306') }}" />
+          </div>
+          <div>
+            <label>Usuário</label>
+            <input name="user" value="{{ form.get('user','') }}" />
+          </div>
+          <div>
+            <label>Senha</label>
+            <input name="password" type="password" value="" />
+          </div>
+          <div class="row-span-2">
+            <label>Database</label>
+            <input name="db" placeholder="demo" value="{{ form.get('db','') }}" />
+          </div>
+          <div class="row-span-2">
+            <label>Query (somente SELECT)</label>
+            <textarea name="query" rows="4">{{ form.get('query','') }}</textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">Conectar e Executar</button>
+          <a class="btn secondary" href="/secret">Usar Secret ARN</a>
+        </div>
+      </form>
+
+      {% if result %}
+        <table>
+          <thead>
+            <tr>
+              {% for k in result[0].keys() %}
+                <th>{{ k }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in result %}
+              <tr>
+                {% for v in row.values() %}
+                  <td>{{ v }}</td>
+                {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <div class="title">
+        <h2>Dicas rápidas</h2>
+        <small>pra aula não travar</small>
+      </div>
+      <div class="muted">
+        <p><b>SG do RDS</b>: inbound 3306 só do SG do ECS.</p>
+        <p><b>Subnets</b>: RDS privado; ECS pode ser público no lab.</p>
+        <p><b>CloudWatch</b>: ver erros de conexão e DNS.</p>
+      </div>
+      <div class="alert" style="margin-top:10px;">
+        <div class="mono">SELECT id, name, email FROM customers LIMIT 50;</div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

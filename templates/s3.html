@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="grid">
+    <div class="card">
+      <div class="title">
+        <h2>S3 • Upload de objeto</h2>
+        <small>Grava no bucket via env var</small>
+      </div>
+
+      {% if error %}
+        <div class="alert err">{{ error }}</div>
+      {% endif %}
+      {% if result %}
+        <div class="alert ok">
+          Upload realizado!<br/>
+          <span class="mono">{{ result.uri }}</span>
+        </div>
+      {% endif %}
+
+      <div class="alert">
+        <div class="muted">Bucket configurado (env <span class="mono">S3_BUCKET</span>):</div>
+        <div class="mono">{{ bucket if bucket else "NÃO DEFINIDO" }}</div>
+      </div>
+
+      <form method="post" action="/s3/upload" enctype="multipart/form-data" autocomplete="off">
+        <div class="form">
+          <div class="row-span-2">
+            <label>Key (caminho/arquivo dentro do bucket)</label>
+            <input name="key" placeholder="uploads/hello.txt ou deixe vazio e envie um arquivo" value="{{ form.get('key','') }}" />
+          </div>
+          <div class="row-span-2">
+            <label>Arquivo (opcional)</label>
+            <input name="file" type="file" />
+          </div>
+          <div class="row-span-2">
+            <label>Texto (se não enviar arquivo)</label>
+            <textarea name="text" rows="4" placeholder="Conteúdo do arquivo...">{{ form.get('text','') }}</textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" type="submit">Enviar para S3</button>
+          <a class="btn secondary" href="/env">Voltar para RDS Env→Secret</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="title">
+        <h2>IAM necessário</h2>
+        <small>Task Role</small>
+      </div>
+      <div class="alert">
+        <div class="mono">s3:PutObject em arn:aws:s3:::SEU_BUCKET/*</div>
+      </div>
+      <p class="muted">Se der AccessDenied, é quase sempre a policy da Task Role.</p>
+    </div>
+  </div>
+{% endblock %}
