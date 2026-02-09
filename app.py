@@ -6,8 +6,14 @@ from flask import Flask, render_template, request, redirect, url_for
 import pymysql
 import pymysql.cursors
 import boto3
+import requests
 
 app = Flask(__name__)
+
+# ===== ALTERE AQUI PARA MOSTRAR DEPLOY ATUALIZADO =====
+APP_VERSION = "v1.0.0"
+DEPLOY_DATE = "2026-02-09"
+# =======================================================
 
 DEFAULT_QUERY = "SELECT id, name, email FROM customers ORDER BY id LIMIT 50;"
 DEFAULT_ENV_SECRET_VAR = "RDS_SECRET_ARN"
@@ -17,6 +23,47 @@ S3_BUCKET_ENV = "S3_BUCKET"
 # ==========================
 # Helpers
 # ==========================
+def get_ecs_metadata():
+    """
+    Coleta metadados da task ECS (IP privado, task ARN, etc.)
+    """
+    metadata = {
+        "private_ip": "N/A",
+        "task_arn": "N/A",
+        "cluster": "N/A",
+        "availability_zone": "N/A"
+    }
+    
+    try:
+        # ECS Task Metadata Endpoint V4
+        metadata_uri = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
+        if metadata_uri:
+            # Pega info da task
+            task_response = requests.get(f"{metadata_uri}/task", timeout=2)
+            if task_response.status_code == 200:
+                task_data = task_response.json()
+                
+                # IP privado
+                containers = task_data.get("Containers", [])
+                if containers:
+                    networks = containers[0].get("Networks", [])
+                    if networks:
+                        metadata["private_ip"] = networks[0].get("IPv4Addresses", ["N/A"])[0]
+                
+                # Task ARN
+                metadata["task_arn"] = task_data.get("TaskARN", "N/A")
+                
+                # Cluster
+                metadata["cluster"] = task_data.get("Cluster", "N/A")
+                
+                # Availability Zone
+                metadata["availability_zone"] = task_data.get("AvailabilityZone", "N/A")
+    except Exception as e:
+        print(f"Erro ao coletar metadados ECS: {e}")
+    
+    return metadata
+
+
 def safe_int(value, default):
     try:
         return int(value)
@@ -93,9 +140,16 @@ def extract_rds_params_from_secret(secret: dict, db_override: str = ""):
 
 def base_context(active: str):
     # Se você já tem base.html com logo embutido, não precisa passar nada aqui.
+    ecs_metadata = get_ecs_metadata()
     return {
         "active": active,
         "brand": "UpperStack Cloud Lab",
+        "app_version": APP_VERSION,
+        "deploy_date": DEPLOY_DATE,
+        "private_ip": ecs_metadata["private_ip"],
+        "task_arn": ecs_metadata["task_arn"],
+        "cluster": ecs_metadata["cluster"],
+        "availability_zone": ecs_metadata["availability_zone"],
     }
 
 

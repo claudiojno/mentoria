@@ -7,6 +7,19 @@
         <small>Digite host/usuário/senha</small>
       </div>
 
+      <!-- Informações de Deploy e Metadados -->
+      <div class="alert" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <strong>🚀 Deploy:</strong> {{ app_version }} 
+            <span style="opacity: 0.9;">• {{ deploy_date }}</span>
+          </div>
+          <div style="font-size: 0.9em; opacity: 0.95;">
+            <strong>📍 IP Privado:</strong> {{ private_ip }}
+          </div>
+        </div>
+      </div>
+
       {% if error %}
         <div class="alert err">{{ error }}</div>
       {% endif %}
@@ -82,6 +95,16 @@
       </div>
       <div class="alert" style="margin-top:10px;">
         <div class="mono">SELECT id, name, email FROM customers LIMIT 50;</div>
+      </div>
+      
+      <!-- Metadados ECS -->
+      <div style="margin-top: 15px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 0.85em;">
+        <div style="font-weight: bold; margin-bottom: 8px; color: #495057;">📊 Metadados ECS</div>
+        <div style="color: #6c757d; line-height: 1.6;">
+          <div><strong>Cluster:</strong> {{ cluster }}</div>
+          <div><strong>AZ:</strong> {{ availability_zone }}</div>
+          <div style="word-break: break-all;"><strong>Task ARN:</strong> {{ task_arn }}</div>
+        </div>
       </div>
     </div>
   </div>
